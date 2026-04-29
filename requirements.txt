@@ -1,0 +1,5 @@
+face-recognition
+numpy
+opencv-python
+streamlit
+setuptools==76.0.0
