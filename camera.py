@@ -11,8 +11,8 @@ SCALE = 2
 st.set_page_config(page_title="Attendance")
 st.header("Attendance")
 
+
 def mark_attendances(names: list[str]):
-    create_table()
     for name in names:
         if name == "Unknown":
             st.warning("Face not recognized.")
@@ -20,21 +20,28 @@ def mark_attendances(names: list[str]):
         mark_attendance(name)
         st.success(f"Marked Attendance: {name}")
 
+
 class FaceDetectionCamera:
     def __init__(self):
         self.st_image = st.empty()
-        
+
         img_paths = list(Path("database/").glob("*.png"))
+        if not img_paths:
+            st.error("No face images found in database.")
         imgs = [face_recognition.load_image_file(path) for path in img_paths]
 
-        self.known_face_encodings = [face_recognition.face_encodings(img)[0] for img in imgs]
+        self.known_face_encodings = [
+            face_recognition.face_encodings(img)[0] for img in imgs
+        ]
         self.known_face_names = [path.stem for path in img_paths]
         self.face_names = []
 
     def run(self):
         cap = cv.VideoCapture(0)
 
-        self.st_button = st.button("Mark Attendance", on_click=lambda: mark_attendances(self.face_names))
+        self.st_button = st.button(
+            "Mark Attendance", on_click=lambda: mark_attendances(self.face_names)
+        )
         if not cap.isOpened():
             st.error("Could not open camera.")
             return
@@ -46,7 +53,7 @@ class FaceDetectionCamera:
                 continue
 
             if process_this_frame:
-                small_frame = cv.resize(frame, (0, 0), fx=1.0 / SCALE, fy= 1.0 / SCALE)
+                small_frame = cv.resize(frame, (0, 0), fx=1.0 / SCALE, fy=1.0 / SCALE)
 
                 rgb_small_frame = small_frame[:, :, ::-1]
                 rgb_small_frame = np.copy(rgb_small_frame)
@@ -66,6 +73,8 @@ class FaceDetectionCamera:
                     face_distances = face_recognition.face_distance(
                         self.known_face_encodings, face_encoding
                     )
+                    if len(face_distances) == 0:
+                        break
                     best_match_index = np.argmin(face_distances)
                     if matches[best_match_index]:
                         name = self.known_face_names[best_match_index]
@@ -74,7 +83,9 @@ class FaceDetectionCamera:
 
             process_this_frame = not process_this_frame
 
-            for (top, right, bottom, left), name in zip(face_locations, self.face_names):
+            for (top, right, bottom, left), name in zip(
+                face_locations, self.face_names
+            ):
                 top *= SCALE
                 right *= SCALE
                 bottom *= SCALE
@@ -84,13 +95,15 @@ class FaceDetectionCamera:
                     frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv.FILLED
                 )
                 font = cv.FONT_HERSHEY_DUPLEX
-                cv.putText(frame, name, (left + 6, bottom - 6), font, .7, (255, 255, 255), 1)
+                cv.putText(
+                    frame, name, (left + 6, bottom - 6), font, 0.7, (255, 255, 255), 1
+                )
             frame = frame[:, :, ::-1]
             self.st_image.image(frame)
 
     def __del__(self):
-
         cv.destroyAllWindows()
+
 
 try:
     cam = FaceDetectionCamera()
@@ -98,5 +111,3 @@ try:
 except Exception as e:
     st.error(f"Fatal error: {e}")
     raise
-
-
