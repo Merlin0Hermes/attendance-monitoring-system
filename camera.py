@@ -1,11 +1,11 @@
-from storage import mark_attendance
+from storage import mark_attendance, load_name_imgpath
 import cv2 as cv
 import numpy as np
 from pathlib import Path
-import face_recognition
+import face_recognition as fr
 import streamlit as st
 
-TOLERANCE = 0.50
+TOLERANCE = 0.54
 SCALE = 2
 
 st.set_page_config(page_title="Attendance")
@@ -25,15 +25,16 @@ class FaceDetectionCamera:
     def __init__(self):
         self.st_image = st.empty()
 
-        img_paths = list(Path("database/").glob("*.png"))
+        img_data = load_name_imgpath()
+        img_paths = [Path(item["filepath"]) for item in img_data]
         if not img_paths:
             st.error("No face images found in database.")
-        imgs = [face_recognition.load_image_file(path) for path in img_paths]
+        imgs = [fr.load_image_file(path) for path in img_paths]
 
         self.known_face_encodings = [
-            face_recognition.face_encodings(img)[0] for img in imgs
+            fr.face_encodings(img)[0] for img in imgs
         ]
-        self.known_face_names = [path.stem for path in img_paths]
+        self.known_face_names = [item["name"] for item in img_data]
         self.face_names = []
 
     def run(self):
@@ -58,19 +59,19 @@ class FaceDetectionCamera:
                 rgb_small_frame = small_frame[:, :, ::-1]
                 rgb_small_frame = np.copy(rgb_small_frame)
 
-                face_locations = face_recognition.face_locations(rgb_small_frame)
-                face_encodings = face_recognition.face_encodings(
+                face_locations = fr.face_locations(rgb_small_frame)
+                face_encodings = fr.face_encodings(
                     rgb_small_frame, face_locations
                 )
 
                 self.face_names = []
                 for face_encoding in face_encodings:
-                    matches = face_recognition.compare_faces(
+                    matches = fr.compare_faces(
                         self.known_face_encodings, face_encoding, tolerance=TOLERANCE
                     )
                     name = "Unknown"
 
-                    face_distances = face_recognition.face_distance(
+                    face_distances = fr.face_distance(
                         self.known_face_encodings, face_encoding
                     )
                     if len(face_distances) == 0:
