@@ -1,4 +1,4 @@
-from storage import mark_attendance, create_table
+from storage import mark_attendance
 import cv2 as cv
 import numpy as np
 from pathlib import Path
