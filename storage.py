@@ -15,7 +15,7 @@ def connect():
 
 
 # Create table
-def create_table():
+def create_tables():
     with connect() as conn:
         conn.execute("""
         CREATE TABLE IF NOT EXISTS attendance (
@@ -33,6 +33,10 @@ def create_table():
         )
         """)
 
+def exists_name(name):
+    with connect() as conn:
+        data = conn.execute("SELECT * FROM images WHERE name LIKE ?", (name,)).fetchall()
+        return len(data) != 0
 
 
 def save_image(name: str, image: Image.Image):

@@ -1,4 +1,4 @@
-from storage import save_image
+from storage import save_image, exists_name
 import numpy
 import streamlit as st
 from PIL import Image
@@ -19,6 +19,9 @@ with st.form("image_upload", clear_on_submit=True):
             face_locations = fr.face_locations(numpy.array(rgb_img))
             if len(face_locations) != 1:
                 st.error("Invalid face image")
+                st.stop()
+            if exists_name(name):
+                st.error("Error: Student with same name exists")
                 st.stop()
 
             save_image(name, rgb_img)
