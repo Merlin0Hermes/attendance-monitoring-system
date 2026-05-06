@@ -42,7 +42,7 @@ class FaceDetectionCamera:
     def run(self):
         cap = cv.VideoCapture(0)
         self.st_button = st.button(
-            "Mark Attendance", on_click=mark_attendances, args=(self.face_names,)
+            "Mark Attendance", on_click=lambda: mark_attendances(self.face_names)
         )
         if not cap.isOpened():
             st.error("Could not open camera.")
