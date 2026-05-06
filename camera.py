@@ -7,6 +7,8 @@ import streamlit as st
 
 TOLERANCE = 0.54
 SCALE = 2
+FONT = cv.FONT_HERSHEY_DUPLEX
+FONT_SCALE = 0.7
 
 st.set_page_config(page_title="Attendance")
 st.header("Attendance")
@@ -39,9 +41,8 @@ class FaceDetectionCamera:
 
     def run(self):
         cap = cv.VideoCapture(0)
-
         self.st_button = st.button(
-            "Mark Attendance", on_click=lambda: mark_attendances(self.face_names)
+            "Mark Attendance", on_click=mark_attendances, args=(self.face_names,)
         )
         if not cap.isOpened():
             st.error("Could not open camera.")
@@ -55,9 +56,7 @@ class FaceDetectionCamera:
 
             if process_this_frame:
                 small_frame = cv.resize(frame, (0, 0), fx=1.0 / SCALE, fy=1.0 / SCALE)
-
-                rgb_small_frame = small_frame[:, :, ::-1]
-                rgb_small_frame = np.copy(rgb_small_frame)
+                rgb_small_frame = np.copy(small_frame[:, :, ::-1])
 
                 face_locations = fr.face_locations(rgb_small_frame)
                 face_encodings = fr.face_encodings(
@@ -95,12 +94,10 @@ class FaceDetectionCamera:
                 cv.rectangle(
                     frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv.FILLED
                 )
-                font = cv.FONT_HERSHEY_DUPLEX
                 cv.putText(
-                    frame, name, (left + 6, bottom - 6), font, 0.7, (255, 255, 255), 1
+                    frame, name, (left + 6, bottom - 6), FONT, FONT_SCALE, (255, 255, 255), 1
                 )
-            frame = frame[:, :, ::-1]
-            self.st_image.image(frame)
+            self.st_image.image(frame, channels="BGR", width=1000)
 
     def __del__(self):
         cv.destroyAllWindows()
