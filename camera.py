@@ -33,9 +33,7 @@ class FaceDetectionCamera:
             st.error("No face images found in database.")
         imgs = [fr.load_image_file(path) for path in img_paths]
 
-        self.known_face_encodings = [
-            fr.face_encodings(img)[0] for img in imgs
-        ]
+        self.known_face_encodings = [fr.face_encodings(img)[0] for img in imgs]
         self.known_face_names = [item["name"] for item in img_data]
         self.face_names = []
 
@@ -59,9 +57,7 @@ class FaceDetectionCamera:
                 rgb_small_frame = np.copy(small_frame[:, :, ::-1])
 
                 face_locations = fr.face_locations(rgb_small_frame)
-                face_encodings = fr.face_encodings(
-                    rgb_small_frame, face_locations
-                )
+                face_encodings = fr.face_encodings(rgb_small_frame, face_locations)
 
                 self.face_names = []
                 for face_encoding in face_encodings:
@@ -95,7 +91,13 @@ class FaceDetectionCamera:
                     frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv.FILLED
                 )
                 cv.putText(
-                    frame, name, (left + 6, bottom - 6), FONT, FONT_SCALE, (255, 255, 255), 1
+                    frame,
+                    name,
+                    (left + 6, bottom - 6),
+                    FONT,
+                    FONT_SCALE,
+                    (255, 255, 255),
+                    1,
                 )
             self.st_image.image(frame, channels="BGR", width=1000)
 
